@@ -52,3 +52,138 @@ Display Detected Objects
 https://github.com/ultralytics/ultralytics
 
 **Platform:** Anaconda + Jupyter Notebook only.
+
+## Program
+
+```
+
+import cv2
+
+# Open the web camera
+cap = cv2.VideoCapture(0)
+
+# Background subtractor for foreground-object detection
+bg_subtractor = cv2.createBackgroundSubtractorMOG2(
+    history=500,
+    varThreshold=50,
+    detectShadows=True
+)
+
+while True:
+
+    # Read frame from webcam
+    ret, frame = cap.read()
+
+    if not ret:
+        print("Cannot read frame from web camera")
+        break
+
+    # Create foreground mask
+    mask = bg_subtractor.apply(frame)
+
+    # Remove small noise
+    kernel = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE,
+        (5, 5)
+    )
+
+    mask = cv2.morphologyEx(
+        mask,
+        cv2.MORPH_OPEN,
+        kernel
+    )
+
+    mask = cv2.morphologyEx(
+        mask,
+        cv2.MORPH_DILATE,
+        kernel
+    )
+
+    # Find contours of detected objects
+    contours, _ = cv2.findContours(
+        mask,
+        cv2.RETR_EXTERNAL,
+        cv2.CHAIN_APPROX_SIMPLE
+    )
+
+    # Process each detected contour
+    for contour in contours:
+
+        # Calculate contour area
+        area = cv2.contourArea(contour)
+
+        # Ignore very small regions
+        if area > 2500:
+
+            # Get bounding rectangle
+            x, y, w, h = cv2.boundingRect(contour)
+
+            # Draw bounding box
+            cv2.rectangle(
+                frame,
+                (x, y),
+                (x + w, y + h),
+                (0, 255, 0),
+                2
+            )
+
+            # Display detection text
+            cv2.putText(
+                frame,
+                "Object Detected",
+                (x, y - 10),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 0),
+                2
+            )
+
+    # Display camera frame
+    cv2.imshow(
+        "Workshop 2 - Object Detection",
+        frame
+    )
+
+    # Press 'q' to stop
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Release the webcam
+cap.release()
+
+# Close all OpenCV windows
+cv2.destroyAllWindows()
+
+
+```
+
+
+## Output
+
+<img width="640" height="480" alt="WhatsApp Image 2026-08-19 at 8 47 08 PM" src="https://github.com/user-attachments/assets/cac8dd50-b385-481f-b87c-cec342637ceb" />
+
+
+## Result
+
+The laptop camera was successfully accessed using OpenCV, and an image was captured after 5 seconds. The captured image was then processed using the YOLOv8 object detection model. YOLOv8 successfully detected the object present in the image and displayed it with a bounding box and label. Thus, the experiment successfully demonstrated object detection using a laptop camera and YOLOv8.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
